@@ -92,7 +92,7 @@ def process_llm_response(llm_response):
 
 # full example
 start = time.time()
-query = "What tests were run on the Type Pow-R-Way III 4000A?:"
+query = "Tell me something about Pow-R-Way III 2500A:"
 llm_response = qa_chain(query)
 process_llm_response(llm_response)
 end = time.time()

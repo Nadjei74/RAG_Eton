@@ -3,9 +3,10 @@ import argparse
 from langchain_community.vectorstores import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.llms.ollama import Ollama
-from langchain.retrievers.document_compressors import flashrank_rerank
+from langchain.retrievers.document_compressors.flashrank_rerank import FlashrankRerank
 from langchain.retrievers import ContextualCompressionRetriever
 from embedding import get_embedding_function
+
 from langchain.chains import  RetrievalQA
 import time
 import asyncio
@@ -35,41 +36,41 @@ def query_rag(query_text: str):
 
     # Search the DB.
     results = db.similarity_search_with_score(query_text, k=5)
-
-    compressor = flashrank_rerank()
+    """res = db.as_retriever(search_kwargs = {"k":5})
+    compressor = FlashrankRerank()
     compression_retriever = ContextualCompressionRetriever(
-            base_compressor = compressor, base_retriever = results
+            base_compressor = compressor, base_retriever = res
         )
-    compressed_docs = compression_retriever.invoke(query_text)
-    #context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
-    #prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-    #prompt = prompt_template.format(context=context_text, question=query_text)
-    #print(prompt)
+    #compressed_docs = compression_retriever.invoke(query_text)"""
+    context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
+    prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
+    prompt = prompt_template.format(context=context_text, question=query_text)
+    print(prompt)
     """
 
 
     """
     # llm to use
-    #model = Ollama(model="mistral")
-    #response_text = model.invoke(prompt)
+    model = Ollama(model="mistral")
+    response_text = model.invoke(prompt)
 
     # Measure model invocation time
     model = Ollama(model="phi3")
 
     start_time = time.time()
-    qa_chain = RetrievalQA.from_chain_type(
-        chain_type="stuff",
+    """qa_chain = RetrievalQA.from_chain_type(
+
         llm=model,
         retriever = compression_retriever,
-        return_source_documents=True
+        #return_source_documents=True
     )
-    response_text = qa_chain.invoke(query_text)  # Assuming async_invoke is supported
-    #response_text = await model.async_invoke(prompt)
+    response_text = qa_chain.invoke(query_text)  # Assuming async_invoke is supported"""
+
     end_time = time.time()
     print(f"Model invocation time: {end_time - start_time} seconds")
 
-    #sources = [doc.metadata.get("id", None) for doc, _score in results]
-    sources = [doc.metadata.get("id", None) for doc, _score in compressed_docs]
+    sources = [doc.metadata.get("id", None) for doc, _score in results]
+    #sources = [doc.metadata.get("id", None) for doc, _score in compressed_docs]
     formatted_response = f"Response: {response_text}\nSources: {sources}"
     print(formatted_response)
     return formatted_response

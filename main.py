@@ -115,3 +115,51 @@ def clear_database():
 
 if __name__ == "__main__":
     main()
+
+""""# Streamlit UI
+st.title("🤖 Busway chatbot")
+st.write("""
+    This app allows you to ask questions and get answers based on Eaton Test Data.
+    """)
+
+
+# Load or initialize the QA chain
+qa_chain = init_retriever()
+
+# Query section
+st.header("Query the Document Database")
+query = st.text_input("Enter your query:", "")
+if st.button("Submit Query"):
+    if query:
+        start = time.time()
+        llm_response = qa_chain(query)
+        end = time.time()
+
+        st.write("### Answer:")
+        st.write(llm_response['result'])
+
+        st.write("### Sources:")
+        for source in llm_response["source_documents"]:
+            st.write(source.metadata['source'])
+
+        st.write(f"Query executed in {end - start:.2f} seconds.")
+    else:
+        st.error("Please enter a query.")
+
+# Upload section
+st.header("Upload New Documents")
+uploaded_files = st.file_uploader("Choose PDF files", accept_multiple_files=True, type="pdf")
+
+if st.button("Add Documents"):
+    if uploaded_files:
+        for uploaded_file in uploaded_files:
+            file_path = os.path.join(DATA_PATH, uploaded_file.name)
+            with open(file_path, "wb") as f:
+                f.write(uploaded_file.read())
+        st.success("Documents uploaded successfully!")
+
+        # Reinitialize the vector database with new documents
+        qa_chain = init_retriever()
+    else:
+        st.error("Please upload files before clicking 'Add Documents'.")
+"""
